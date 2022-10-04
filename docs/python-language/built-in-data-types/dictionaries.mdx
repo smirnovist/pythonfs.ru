@@ -1,0 +1,1029 @@
+---
+sidebar_position: 4
+---
+
+# Словари
+
+## Словари. Общая информация {#dictionaries-common-information}
+
+Словарь (`dict`) — это одна из разновидностей коллекций (контейнеров) — встроенный тип данных, реализующий механизм отображения (от английского «mapping» — «отображение»). Отображения реализуют набор методов, определённых в [абстрактных базовых классах](https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes) [`collections.abc.Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping) и [`collections.abc.MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping). Абстрактные базовые классы будут подробно разбираться в главе **Объектно-ориентированное программирование**.
+
+В отображениях хешируемые объекты (ключи) связываются с произвольными объектами (значениями). Элементы этих коллекций имеют вид `ключ: значение`. Строго говоря, значения элементов словаря — это значения объектов, на которые ссылаются ключи элементов словаря. Отображения — это изменяемые объекты. В настоящее время существует только один стандартный тип отображения — словарь (`dict`). Однако в стандартной библиотеке есть классы, в которых реализован механизм отображений. Это [`collections.defaultdict`](https://docs.python.org/3/library/collections.html#collections.defaultdict), [`collections.OrderedDict`](https://docs.python.org/3/library/collections.html#collections.OrderedDict) и [`collections.Counter`](https://docs.python.org/3/library/collections.html#collections.Counter).
+
+Можно провести аналогию между ключами словарей и индексами последовательностей (кортежей, диапазонов, списков, строк, байтов и байтовых массивов). И ключи, и индексы используются для доступа к элементам. Разница между ключами словарей и индексами последовательностей в том, что ключи — это имена элементов (подобно названиям переменных, которые являются именами связанных с ними объектов), а индексы — это смещения элементов (номера элементов в последовательности, начиная с нуля).
+
+В следующем примере на строке 1 объявлен список `a` из трёх элементов. На строках 2, 4 и 6 выполняется обращение к элементам списка по индексам.
+
+На строке 8 объявлен словарь `d` из трёх элементов. Ключи словаря — строки `'zero'`, `'one'` и `'two'`. Значения — строки `'a'`, `'b'` и `'c'`. На строках 9, 11 и 13 выполняется обращение к элементам словаря по ключам.
+
+```python showLineNumbers
+>>> a = ['a', 'b', 'c']
+>>> a[0]
+'a'
+>>> a[1]
+'b'
+>>> a[2]
+'c'
+>>> d = {'zero': 'a', 'one': 'b', 'two': 'c'}
+>>> d['zero']
+'a'
+>>> d['one']
+'b'
+>>> d['two']
+'c'
+```
+
+Ключи словарей — это любые хешируемые объекты. Тип данных `dict` обеспечивает уникальность ключей в пределах одного словаря, и сравнение ключей по хешам позволяет реализовать эту уникальность. Поэтому нехешируемые объекты не могут быть ключами словарей, они могут быть только значениями элементов.
+
+Числовые типы, используемые для ключей, подчиняются обычным правилам для числового сравнения: если два числа равны (например, `1` и `1.0`), то их можно использовать взаимозаменяемо для обращения к одному и тому же элементу словаря.
+
+Приведённый ниже пример демонстрирует взаимозаменяемость целых чисел и чисел с плавающей точкой для обращения к элементам словарей. Хеши чисел `12345` и `12345.0` равны, поэтому эти числа можно использовать взаимозаменяемо для обращения к элементу словаря.
+
+```python showLineNumbers
+>>> a = 12345
+>>> hash(a)
+12345
+>>> b = 12345.0
+>>> hash(b)
+12345
+>>> d = {a: 'element'}
+>>> d[b]
+'element'
+```
+
+:::info внимание
+
+Поскольку компьютеры хранят числа с плавающей точкой как приближённые значения, не рекомендуется использовать их в качестве ключей словарей.
+
+:::
+
+Словари равны между собой (операция `==`) тогда и только тогда, когда они имеют одинаковые пары `(ключ, значение)` (независимо от порядка следования элементов). При попытках применить операции сравнения `<`, `<=`, `>=`, `>` к словарям возбуждаются исключение типа `TypeError`.
+
+Словари сохраняют порядок вставки.
+
+:::info внимание
+
+Обновление элемента с уже имеющимся ключом не влияет на порядок элементов в словаре. Если из словаря были удалены элементы, при добавлении новых элементов с такими же ключами, которые были в удалённых элементах, создаются новые элементы с этими же ключами и вставляются в конец словаря:
+
+:::
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4}
+>>> del d['two']
+>>> d
+{'one': 1, 'three': 3, 'four': 4}
+>>> d['two'] = None
+>>> d
+{'one': 1, 'three': 3, 'four': 4, 'two': None}
+```
+
+Поскольку словари сохраняют порядок вставки, словари и представления словарей могут быть отсортированы в обратном порядке:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4}
+>>> list(reversed(d))
+['four', 'three', 'two', 'one']
+>>> list(reversed(d.values()))
+[4, 3, 2, 1]
+>>> list(reversed(d.items()))
+[('four', 4), ('three', 3), ('two', 2), ('one', 1)]
+```
+
+Для создания представлений словарей, доступных только для чтения (то есть неизменяемых), можно использовать класс [`types.MappingProxyType`](https://docs.python.org/3/library/types.html#types.MappingProxyType). Это может быть полезно, если нужно обеспечить защиту от изменения словаря. Объекты типа `mappingproxy` удобно осуществлять через представлениея `dictview.mapping`. Более подробно об этом написано ниже.
+
+Словари можно создавать несколькими способами:
+
+- Через литерал. Пустой словарь создаётся через литерал `{}`. Непустой словарь можно создать, поместив внутри фигурных скобок список пар вида `key: value`, разделённый запятыми. Например: `{'foo': 4098, 'bar': 4127}` или `{4098: 'foo', 4127: 'bar'}`.
+- Через выражение (словарное включение или, иначе, генератор словарей — в русскоязычной документации встречаются разные названия) (от английского «dict comprehension»): `{x: x ** 2 for x in range(10)}`.
+- Через функцию-конструктор: `dict()`, `dict([('foo', 100), ('bar', 200)])`, `dict(foo=100, bar=200)`.
+
+### `class dict(**kwarg)` {#class-dict-kwarg}
+### `class dict(mapping, **kwarg)` {#class-dict-mapping-kwarg}
+### `class dict(iterable, **kwarg)` {#class-dict-iterable-kwarg}
+
+Функция-[конструктор](https://ru.wikipedia.org/wiki/Конструктор_(объектно-ориентированное_программирование)) `dict()` возвращает новый словарь, инициализированный из необязательного позиционного аргумента и, возможно, пустого набора аргументов ключевого слова.
+
+Если позиционный аргумент не указан, создается пустой словарь. Если указан позиционный аргумент, и это объект отображения, словарь создается с теми же парами ключ-значение, что и объект отображения. В противном случае позиционный аргумент должен быть итерируемым объектом. Каждый элемент в итерируемом объекте должен быть итерируемым ровно с двумя объектами. Первый объект каждого элемента становится ключом в новом словаре, а второй объект - соответствующим значением. Если ключ встречается более одного раза, последнее значение для этого ключа становится соответствующим значением в новом словаре.
+
+Если указаны аргументы ключевого слова, аргументы ключевого слова и их значения добавляются в словарь, созданный из позиционного аргумента. Если добавляемый ключ уже присутствует, значение из аргумента ключевого слова заменяет значение из позиционного аргумента.
+
+Например, все следующие выражения возвращают словарь, равный `{"one": 1, "two": 2, "three": 3}` (идентификаторы словарей разные, но значения равны):
+
+```python showLineNumbers
+>>> a = dict(one=1, two=2, three=3)
+>>> b = {'one': 1, 'two': 2, 'three': 3}
+>>> c = dict(zip(['one', 'two', 'three'], [1, 2, 3]))
+>>> d = dict([('two', 2), ('one', 1), ('three', 3)])
+>>> e = dict({'three': 3, 'one': 1, 'two': 2})
+>>> f = dict({'one': 1, 'three': 3}, two=2)
+>>> a == b == c == d == e == f
+True
+```
+
+Предоставление аргументов ключевого слова, как в первом примере, работает только для ключей, которые являются действительными идентификаторами Python. В противном случае можно использовать любые действующие ключи.
+
+Ниже приведены операции, поддерживаемые объектами типа `dict` (и, следовательно, пользовательские типы отображений также должны поддерживать):
+
+### `list(d)` {#list-d}
+
+Возвращает список (`list`) всех ключей, используемых в словаре `d`. Если словарь `d` пустой, возвращает пустой список.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> list(d)
+['one', 'two', 'three', 'four', 'five', 'six']
+>>> d = {}
+>>> list(d)
+[]
+```
+
+### `len(d)` {#len-d}
+
+Возвращает количество элементов в словаре `d`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> len(d)
+6
+>>> d = {}
+>>> len(d)
+0
+```
+
+### `d[key]` {#d-key}
+
+Возвращает значение элемента словаря `d`, доступного по ключу `key`. Если ключа `key` нет в словаре `d`, возбуждает исключение типа `KeyError`.
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> d['one']
+1
+>>> d['seven']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'seven'
+```
+
+Если `d` является экземпляром подкласса (например, `SubClass`), наследующего от класса `dict`, и в подклассе объявлен метод `__missing__()` (например, `SubClass.__missing__()`), а ключ `key` отсутствует, операция `d[key]` вызывает этот метод с ключом `key`, переданным в качестве аргумента: `d.__missing__(key)`. Затем операция `d[key]` возвращает всё, что было возвращено вызовом `d.__missing__(key)` (или возбуждает исключение, если в методе было объявлено исключение). Никакие другие операции или методы не вызывают метод `d.__missing__()`. Если метод `__missing__()` не объявлен в подклассе, возбуждается исключение типа `KeyError`. Метод `d.__missing__()` не может быть переменной экземпляра, он должен быть должен быть методом.
+
+В приведённом ниже примере показана часть реализации класса [`collections.Counter`](https://docs.python.org/3/library/collections.html#collections.Counter). Другая реализация метода `__missing__()` используется в классе [`collections.defaultdict`](https://docs.python.org/3/library/collections.html#collections.defaultdict).
+
+```python showLineNumbers
+>>> class Counter(dict):
+...     def __missing__(self, key):
+...         return 0
+>>> c = Counter()
+>>> c['red']
+0
+>>> c['red'] += 1
+>>> c['red']
+1
+```
+
+### `d[key] = value` {#d-key-value}
+
+Устанавливает значение `value` для элемента `d[key]`. Если такого элемента нет в словаре — создаёт его. Если такой элемент уже есть — меняет значение элемента (помните, что ключи словаря ссылаются на объекты, а значения словаря — это значения этих объектов).
+
+```python showLineNumbers
+>>> d = {}
+>>> d['one'] = 1
+>>> d['two'] = 2
+>>> d['three'] = 3
+>>> d
+{'one': 1, 'two': 2, 'three': 3}
+>>> d['one'] = 'один'
+>>> d['two'] = 'два'
+>>> d['three'] = 'три'
+>>> d
+{'one': 'один', 'two': 'два', 'three': 'три'}
+```
+
+### `del d[key]` {#del-d-key}
+
+Удаляет элемент `d[key]` из словаря `d`. Возбуждает исключение типа `KeyError`, если ключа `key` нет в словаре `d`. Можно удалять несколько элементов словаря за один вызов инструкции `del`, разделяя ключи запятыми. Элементы словаря можно заключать в круглые скобки.
+
+Если при удалении нескольких элементов за один вызов инструкции `del` среди ключей дл будет указан ключ, которого не в словаре, во время выполнения операции будут удалены элементы, находящиеся слева от несуществующего ключа, затем будет возбуждено исключение типа `KeyError`, и оставшиеся элементы, находящиеся справа от несуществующего ключа, не будут удалены из словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> del d['four']
+>>> d
+{'one': 1, 'two': 2, 'three': 3, 'five': 5, 'six': 6}
+>>> del d['five'], d['six']
+>>> d
+{'one': 1, 'two': 2, 'three': 3}
+>>> del d['seven']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'seven'
+>>> del d['one'], d['seven'], d['two'], d['three']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'seven'
+>>> d
+{'two': 2, 'three': 3}
+>>> del (d['two'], d['three'])
+>>> d
+{}
+```
+
+### `key in d` {#key-in-d}
+
+Возвращает `True`, если в словаре `d` имеется ключ `key`. В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> 'one' in d
+True
+>>> 'seven' in d
+False
+```
+
+### `key not in d` {#key-not-in-d}
+
+Возвращает `True`, если в словаре `d` нет ключа `key`. В противном случае возвращает `False`. Эквивалентно выражению `not key in d`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> 'seven' not in d
+True
+>>> 'one' not in d
+False
+```
+
+### `iter(d)` {#iter-d}
+
+Возвращает итератор по ключам словаря. Это синтаксический сахар (более короткая синтаксическая конструкция, упрощающая написание программы) для выражения `iter(d.keys())`.
+
+Итераторы были рассмотрены в секции **[Цикл for](/docs/python-language/compound-statements-beginning/for-statement)**.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> i = iter(d)
+>>> type(i)
+<class 'dict_keyiterator'>
+>>> next(i)
+'one'
+>>> next(i)
+'two'
+>>> next(i)
+'three'
+>>> next(i)
+'four'
+>>> next(i)
+'five'
+>>> next(i)
+'six'
+>>> next(i)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> i = iter(d)
+>>> flag = True
+>>> while flag:
+...     try:
+...             next(i)
+...     except StopIteration:
+...             flag = False
+...
+'one'
+'two'
+'three'
+'four'
+'five'
+'six'
+```
+
+### `dict.clear()` {#dict-clear}
+
+Удаляет все элементы из словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> d.clear()
+>>> d
+{}
+```
+
+### `dict.copy()` {#dict-copy}
+
+Возвращает поверхностную копию словаря.
+
+Поверхностная копия объекта — это новый объект того же типа и той же структуры, что и исходный объект. Если исходный объект содержит ссылки на другие объекты, поверхностная копия будет содержать ссылки на те же объекты, на которые ссылается исходный объект.
+
+**Примечание.** Аналогичный функционал имеется в стандартной библиотеке в модуле [copy]`https://docs.python.org/3/library/copy.html`. Модуль `copy` содержит два метода:
+
+- `copy.copy(x)` — возвращает поверхностную копию объекта `x`;
+- copy.deepcopy(x[, memo]) — возвращает глубокую копию объекта `x`. Глубокая копия отличается от поверхностной тем, что создаёт копии всех объектов, на которые ссылается исходный объект.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.copy()
+>>> o
+{'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+```
+
+### `classmethod dict.fromkeys(iterable[, value])` {#classmethod-dict-fromkeys-iterable-value}
+
+Метод класса. Создаёт новый словарь с ключами, полученными из итерируемого объекта, переданного аргументом `iterable` и значениями, полученными из необязательного аргумента `value`. Аргумент `value` по умолчанию имеет значение `None`.
+
+Все элементы полученного словаря ссылаются на один объект (экземпляр), переданный через аргумент `value`, поэтому обычно не имеет смысла использовать предавать через аргумент `value` изменяемый объект (например, пустой список). Чтобы получить различные значения нового словаря на основе имеющегося итерируемого объекта, нужно использовать словарное включение (или, иначе, генератор словарей — dict comprehension) а вместо метода `dict.fromkeys()`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = dict.fromkeys(d)
+>>> o
+{'one': None, 'two': None, 'three': None, 'four': None, 'five': None, 'six': None}
+>>> o = dict.fromkeys(d, 'abc')
+>>> o
+{'one': 'abc', 'two': 'abc', 'three': 'abc', 'four': 'abc', 'five': 'abc', 'six': 'abc'}
+>>>
+>>> # Не имеет смысла предавать через аргумент value изменяемые объекты,
+>>> # поскольку все значения словаря будут ссылаться на единственный объект
+>>> o = dict.fromkeys(d, [])
+>>> o
+{'one': [], 'two': [], 'three': [], 'four': [], 'five': [], 'six': []}
+>>> o['one'].append('a')
+>>> o
+{'one': ['a'], 'two': ['a'], 'three': ['a'], 'four': ['a'], 'five': ['a'], 'six': ['a']}
+>>>
+>>> # Чтобы каждый элемент словаря ссылался на уникальный объект,
+>>> # вместо dict.fromkeys() нужно использовать словарное включение (dict comprehension)
+>>> o = {key: [] for key in d}
+>>> o
+{'one': [], 'two': [], 'three': [], 'four': [], 'five': [], 'six': []}
+>>> o['one'].append('a')
+>>> o
+{'one': ['a'], 'two': [], 'three': [], 'four': [], 'five': [], 'six': []}
+```
+
+### `dict.get(key[, default])` {#dict-get-key-default}
+
+Возвращает объект, на который ссылается элемент словаря с ключом `key`, если ключ `key` находится в словаре. В противном случае возвращает ссылку на объект, переданный необязательным аргументом `default`. Если аргумент `default` не указан, по умолчанию используется `None`. Поэтому этот метод никогда не возбуждает исключение типа `KeyError`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> e = d.get('one')
+>>> e
+1
+>>> e = d.get('seven')
+>>> print(e)
+None
+>>> e = d.get('seven', 7)
+>>> e
+7
+```
+
+### `dict.items()` {#dict-items}
+
+Возвращает новый объект типа `dict_items` — представления элементов словаря в виде кортежей вида `(ключ, значение)`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> d.items()
+dict_items([('one', 1), ('two', 2), ('three', 3), ('four', 4), ('five', 5), ('six', 6)])
+```
+
+Представления элементов словаря (объекты типа `dict_items`) удобно использовать для обхода словарей в цикле `for`:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> for k, v in d.items():
+...     k, v
+...
+('one', 1)
+('two', 2)
+('three', 3)
+('four', 4)
+('five', 5)
+('six', 6)
+```
+
+Представления словарей рассмотрены ниже.
+
+### `dict.keys()` {#dict-keys}
+
+Возвращает новый объект типа `dict_keys` — представления ключей словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> d.keys()
+dict_keys(['one', 'two', 'three', 'four', 'five', 'six'])
+```
+
+Представления ключей словаря (объекты типа `dict_keys`) удобно использовать для обхода словарей в цикле `for`:
+
+```python showLineNumbers
+>>> for k in d.keys():
+...     k
+...
+'one'
+'two'
+'three'
+'four'
+'five'
+'six'
+>>>
+>>> # Конструкция выше эквивалентна конструкции ниже
+>>> for k in d:
+...     k
+...
+'one'
+'two'
+'three'
+'four'
+'five'
+'six'
+```
+
+Представления словарей рассмотрены ниже.
+
+### `dict.pop(key[, default])` {#dict-pop-key-default}
+
+Если ключ `key` находится в словаре, метод удаляет из словаря элемент с этим ключом и возвращает ссылку на объект, на который ссылался элемент, доступный по ключу `key`. Если ключа `key` нет в словаре, метод возвращает ссылку на объект, переданный через аргумент `default`. Если аргумент `default` не указан и ключ `key` отсутствует в словаре, метод возбуждает исключение типа `KeyError`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.pop('one')
+>>> o
+1
+>>> d
+{'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.pop('seven', 7)
+>>> o
+7
+>>> o = d.pop('seven')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'seven'
+```
+
+### `dict.popitem()` {#dict-popitem}
+
+Удаляет элемент из словаря и возвращает кортеж вида `(ключ, значение)`, созданный на основе удалённого элемента. Пары возвращаются в порядке [LIFO](https://ru.wikipedia.org/wiki/LIFO) (от английского «last in — first out» — «последним пришёл — первым вышел»). То есть удаление элементов выполняется с конца словаря. Если словарь пуст, возбуждается исключение типа `KeyError`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> d
+{'one': 1, 'two': 2, 'three': 3}
+>>> d.popitem()
+('three', 3)
+>>> d
+{'one': 1, 'two': 2}
+>>> d.popitem()
+('two', 2)
+>>> d
+{'one': 1}
+>>> d.popitem()
+('one', 1)
+>>> d
+{}
+>>> d.popitem()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'popitem(): dictionary is empty'
+>>>
+>>> d['three'] = 3
+>>> d['two'] = 2
+>>> d['one'] = 1
+>>> d
+{'three': 3, 'two': 2, 'one': 1}
+>>> d.popitem()
+('one', 1)
+>>> d
+{'three': 3, 'two': 2}
+>>> d.popitem()
+('two', 2)
+>>> d
+{'three': 3}
+>>> d.popitem()
+('three', 3)
+>>> d
+{}
+```
+
+Метод полезен для прохождения по словарю в цикле `while` с удалением элементов:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> flag = True
+>>> while flag:
+...     try:
+...             d.popitem()
+...     except KeyError:
+...             flag = False
+...
+('three', 3)
+('two', 2)
+('one', 1)
+>>> d
+{}
+```
+
+### `reversed(d)` {#reversed-d}
+
+Вернуть обратный итератор по ключам словаря. Это синтаксический сахар (более короткая синтаксическая конструкция, упрощающая написание программы) для выражения `reversed(d.keys())`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> r = reversed(d)
+>>> type(r)
+<class 'dict_reversekeyiterator'>
+>>> next(r)
+'six'
+>>> next(r)
+'five'
+>>> next(r)
+'four'
+>>> next(r)
+'three'
+>>> next(r)
+'two'
+>>> next(r)
+'one'
+>>> next(r)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> r = reversed(d)
+>>> flag = True
+>>> while flag:
+...     try:
+...             next(r)
+...     except StopIteration:
+...             flag = False
+...
+'six'
+'five'
+'four'
+'three'
+'two'
+'one'
+```
+
+### `dict.setdefault(key[, default])` {#dict-setdefault-key-default}
+
+Если ключ `key` находится в словаре, метод возвращает ссылку на объект, на который ссылается элемент словаря с ключом `key`. Если ключа `key` нет в словаре, метод добавляет в словарь элемент с ключом, переданным через аргумент `key`, и значением, переданным через необязательный аргумент `default`, и возвращает ссылку на объект, переданный через аргумент `default`. По умолчанию аргумент `default` равен `None`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> e = d.setdefault('one')
+>>> e
+1
+>>> e = d.setdefault('seven')
+>>> print(e)
+None
+>>> d
+{'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': None}
+>>> e = d.setdefault('eight', 8)
+>>> e
+8
+>>> d
+{'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': None, 'eight': 8}
+```
+
+### `dict.update([other])` {#dict-update-other}
+
+Метод обновляет словарь парами `(ключ, значение)` из списка (`list`) итерируемых объектов, переданного через аргумент `other`. Возвращает `None`.
+
+Каждый из итерируемых объектов списка должен состоять из двух элементов: из первого элемента берётся ключ, из второго — значение.
+
+Метод также может принимать именованные аргументы. В этом случае при обновлении имена аргументов становятся ключами, а значение аргументов — значениями элементов.
+
+Можно комбинировать список итерируемых объектов с именованными аргументами.
+
+Словарь обновляется следующим образом: по каждой паре `(ключ, значение)` производится проверка: если в словаре уже есть элемент с этим ключом, значение элемента обновляется, а если такого ключа нет, добавляется новый элемент с этим ключом и значением.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> o = {'one': 'один', 'two': 'два'}
+>>> d.update(o)
+>>> d
+{'one': 'один', 'two': 'два', 'three': 3}
+>>> d.update(three='три', four='четыре')
+>>> d
+{'one': 'один', 'two': 'два', 'three': 'три', 'four': 'четыре'}
+>>> d = {'one': 'один', 'two': 'два', 'three': 'три', 'four': 'четыре'}
+>>> d.update([('one', 1), ['two', 2], {'three': None, 3: None}, iter(['four', 4])], five=5, six=6, seven=7)
+>>> d
+{'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7}
+```
+
+### `dict.values()` {#dict-values}
+
+Возвращает новый объект типа `dict_values` — представления значений словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> d.values()
+dict_values([1, 2, 3, 4, 5, 6])
+```
+
+Представления значений словаря (объекты типа `dict_values`) удобно использовать для обхода словарей в цикле `for`:
+
+```python showLineNumbers
+>>> for v in d.values():
+...     v
+...
+1
+2
+3
+4
+5
+6
+```
+
+Сравнение одного объекта типа `dict_values` с другим объектом типа `dict_values` всегда будет возвращать `False`. Сравнение двух объектов типа  `dict_values`, созданных на основе одного исходного словаря, также возвратит при сравнении между собой также возвратит `False` (хотя каждый их этих объектов при сравнении с самим собой вернёт `True`):
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> a = d.values()
+>>> a == a
+True
+>>> b = d.values()
+>>> b == b
+True
+>>> a == b
+False
+```
+
+Представления словарей рассмотрены ниже.
+
+### `d | other` {#d-vertical-line-other}
+
+Создаёт новый словарь с объединёнными ключами и значениями словарей `d` и `other`. Значения словаря `other` имеют приоритет в случаях, когда в словарях `d` и `other` встречаются одинаковые ключи.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> o = {'three': 'три', 'four': 'четыре', 'five': 'пять'}
+>>> r = d | o
+>>> r
+{'one': 1, 'two': 2, 'three': 'три', 'four': 'четыре', 'five': 'пять'}
+```
+
+### `d |= other` {#d-vertical-line-equals-sign-other}
+
+Обновляет словарь `d` ключами и значениями из словаря `other`, который может быть либо отображением (mapping), либо итерируемым объектом (iterable) с парами `(ключ, значение)`. Значения объекта `other` имеют приоритет в случаях, когда в словарях `d` и `other` встречаются одинаковые ключи.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> o = {'two': 'два', 'three': 'три', 'four': 'четыре'}
+>>> d |= o
+>>> d
+{'one': 1, 'two': 'два', 'three': 'три', 'four': 'четыре'}
+```
+
+## Представления словарей {#dictionary-view-objects}
+
+Объекты, возвращаемые методами `dict.keys()`, `dict.values()` и `dict.items()`, являются представлениями словарей (от английского «dictionary view» — «представление словаря»). Они обеспечивают динамическое представление элементов словарей. Это означает, что когда словарь изменяется, представление отражает эти изменения:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> k = d.keys()
+>>> v = d.values()
+>>> i = d.items()
+>>>
+>>> k
+dict_keys(['one', 'two', 'three'])
+>>> v
+dict_values([1, 2, 3])
+>>> i
+dict_items([('one', 1), ('two', 2), ('three', 3)])
+>>>
+>>> # Добавляем элемент к исходному словарю d
+>>> d['four'] = 4
+>>> k
+dict_keys(['one', 'two', 'three', 'four'])
+>>> v
+dict_values([1, 2, 3, 4])
+>>> i
+dict_items([('one', 1), ('two', 2), ('three', 3), ('four', 4)])
+>>>
+>>> # Удаляем элемент из исходного словаря d
+>>> del d['one']
+>>> k
+dict_keys(['two', 'three', 'four'])
+>>> v
+dict_values([2, 3, 4])
+>>> i
+dict_items([('two', 2), ('three', 3), ('four', 4)])
+>>>
+>>> # Меняем значение элемента исходного словаря
+>>> d['two'] = 'два'
+>>> k
+dict_keys(['two', 'three', 'four'])
+>>> v
+dict_values(['два', 3, 4])
+>>> i
+dict_items([('two', 'два'), ('three', 3), ('four', 4)])
+```
+
+По представления словарей можно проходить в цикле. Представления словарей поддерживают операции проверки вхождений элементов.
+
+Ниже перечислены операции, поддерживаемые объектами — представлениями словарей.
+
+### `len(dictview)` {#len-dictview}
+
+Возвращает количество элементов в словаре.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> len(d.keys())
+6
+>>> len(d.values())
+6
+>>> len(d.items())
+6
+```
+
+### `iter(dictview)` {#iter-dictview}
+
+Возвращает итератор по ключам (если через аргумент `dictview` передаётся объект типа `dict_keys`), значениям (если аргумент `dictview` — объект типа `dict_values`) или элементам (если аргумент `dictview` — объект типа `dict_items`) словаря. Если итератор создаётся на основе объекта типа `dict_values`, элементы итератора представлены кортежами `(ключ, значение)`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> i = iter(d.keys())
+>>> type(i)
+<class 'dict_keyiterator'>
+>>> next(i)
+'one'
+>>> next(i)
+'two'
+>>> next(i)
+'three'
+>>> next(i)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> i = iter(d.values())
+>>> type(i)
+<class 'dict_valueiterator'>
+>>> next(i)
+1
+>>> next(i)
+2
+>>> next(i)
+3
+>>> next(i)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> i = iter(d.items())
+>>> type(i)
+<class 'dict_itemiterator'>
+>>> next(i)
+('one', 1)
+>>> next(i)
+('two', 2)
+>>> next(i)
+('three', 3)
+>>> next(i)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+
+Ключи и значения итерируются в порядке вставки. Это позволяет создавать пары `(значение, ключ)` с помощью встроенной функции [`zip()`](https://docs.python.org/3/library/functions.html#zip):
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> pairs = zip(d.values(), d.keys())
+>>> type(pairs)
+<class 'zip'>
+>>> o = list(pairs)
+>>> o
+[(1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five'), (6, 'six')]
+```
+Другой способ сделать то же самое — словарное включение (dict comprehension):
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> pairs = [(v, k) for (k, v) in d.items()]
+>>> pairs
+[(1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five'), (6, 'six')]
+```
+
+Если нужно поменять ключи и значения местами, можно также воспользоваться функцией `zip()`, а затем преобразовать объект типа `zip` в словарь:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> pairs = zip(d.values(), d.keys())
+>>> o = dict(pairs)
+>>> o
+{1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six'}
+```
+
+При добавлении или удалении записей в словаре итерирование представлений словаря может возбудить исключение типа `RuntimeError` или не выполнить итерирование по всем элементам словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> i = iter(d.items())
+>>> next(i)
+('one', 1)
+>>> d['two'] = 'два'
+>>> next(i)
+('two', 'два')
+>>> del d['three']
+>>> next(i)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+RuntimeError: dictionary changed size during iteration
+```
+
+### `x in dictview` {#x-in-dictview}
+
+Возвращает `True`, если `x` находится в ключах (для объектов типа `dict_keys`), значениях (для объектов типа `dict_values`) или элементах (для объектов типа `dict_items`) исходного словаря. В последнем случае (для объектов типа `dict_items`) `x` должен быть кортежем `(ключ, значение)`. В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.keys()
+>>> o
+dict_keys(['one', 'two', 'three', 'four', 'five', 'six'])
+>>> 'one' in o
+True
+>>> 'seven' in o
+False
+>>>
+>>> o = d.values()
+>>> o
+dict_values([1, 2, 3, 4, 5, 6])
+>>> 1 in o
+True
+>>> 7 in o
+False
+>>>
+>>> o = d.items()
+>>> o
+dict_items([('one', 1), ('two', 2), ('three', 3), ('four', 4), ('five', 5), ('six', 6)])
+>>> ('one', 1) in o
+True
+>>> ('seven', 7) in o
+False
+```
+
+Если сначала создать представление на основе словаря, а затем изменить исходный словарь, результат будет отражать изменения в исходном словаре:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.keys()
+>>> o
+dict_keys(['one', 'two', 'three', 'four', 'five', 'six'])
+>>> 'one' in o
+True
+>>> del d['one']
+>>> o
+dict_keys(['two', 'three', 'four', 'five', 'six'])
+>>> 'one' in o
+False
+>>> 'seven' in o
+False
+>>> d['seven'] = 7
+>>> o
+dict_keys(['two', 'three', 'four', 'five', 'six', 'seven'])
+>>> 'seven' in o
+True
+```
+
+### `x not in dictview` {#x-not-in-dictview}
+
+Возвращает `True`, если `x` не находится в ключах (для объектов типа `dict_keys`), значениях (для объектов типа `dict_values`) или элементах (для объектов типа `dict_items`) исходного словаря. В последнем случае (для объектов типа `dict_items`) `x` должен быть кортежем `(ключ, значение)`. В противном случае возвращает `False`. Эквивалентно выражению `not x in dictview`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.keys()
+>>> 'seven' not in o
+True
+>>> 'one' not in o
+False
+```
+
+Если сначала создать представление на основе словаря, а затем изменить исходный словарь, результат будет отражать изменения в исходном словаре:
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> o = d.keys()
+>>> 'seven' not in o
+True
+>>> d['seven'] = 7
+>>> 'seven' not in o
+False
+```
+
+### `reversed(dictview)` {#reversed-dictview}
+
+Возвращает обратный итератор по ключам (если через аргумент `dictview` передаётся объект типа `dict_keys`), значениям (если аргумент `dictview` — объект типа `dict_values`) или элементам (если аргумент `dictview` — объект типа `dict_items`) словаря. Если итератор создаётся на основе объекта типа `dict_values`, элементы итератора представлены кортежами `(ключ, значение)`. Представление `dictview` будет итерироваться в порядке, обратном порядку элементов в словаре, на основе которого создан объект `dictview`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3}
+>>> r = reversed(d.keys())
+>>> type(r)
+<class 'dict_reversekeyiterator'>
+>>> next(r)
+'three'
+>>> next(r)
+'two'
+>>> next(r)
+'one'
+>>> next(r)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> r = reversed(d.values())
+>>> type(r)
+<class 'dict_reversevalueiterator'>
+>>> next(r)
+3
+>>> next(r)
+2
+>>> next(r)
+1
+>>> next(r)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+>>> r = reversed(d.items())
+>>> type(r)
+<class 'dict_reverseitemiterator'>
+>>> next(r)
+('three', 3)
+>>> next(r)
+('two', 2)
+>>> next(r)
+('one', 1)
+>>> next(r)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+
+При добавлении или удалении записей в словаре итерирование представлений словаря может возбудить исключение типа `RuntimeError` или не выполнить итерирование по всем элементам словаря.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> r = reversed(d.items())
+>>> next(r)
+('six', 6)
+>>> d['five'] = 'пять'
+>>> next(r)
+('five', 'пять')
+>>> del d['four']
+>>> next(r)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+RuntimeError: dictionary changed size during iteration
+```
+
+### `dictview.mapping` {#dictview-mapping}
+
+Возвращает объект типа [`types.MappingProxyType`](https://docs.python.org/3/library/types.html#types.MappingProxyType), обёртывающий исходный словарь, на который ссылается представление `dictview`. Объект-обёртка доступен только для чтения. Это может быть полезно, если нужно обеспечить защиту от изменения словаря.
+
+Объекты-обёртки, созданные на основе представлений `dict_keys`, `dict_values` и `dict_items` не отличаются друг от друга — все они являются отображениями исходного словаря, и через них доступны и ключи, и значения исходного словаря.
+
+При попытке изменения объекта-обёртки возбуждается исключение типа `TypeError`.
+
+```python showLineNumbers
+>>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+>>> k = d.keys().mapping
+>>> v = d.values().mapping
+>>> i = d.items().mapping
+>>>
+>>> k
+mappingproxy({'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>> v
+mappingproxy({'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>> i
+mappingproxy({'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>>
+>>> del d['one']
+>>> k
+mappingproxy({'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>> v
+mappingproxy({'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>> i
+mappingproxy({'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6})
+>>>
+>>> del k['two']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: 'mappingproxy' object does not support item deletion
+```
+
+## Дополнительные ссылки {#additional-links}
+
+- [Хеш-сумма](https://ru.wikipedia.org/wiki/Хеш-сумма)
+- [Хеш-функция](https://ru.wikipedia.org/wiki/Хеш-функция)
+- [Хеш-таблица](https://ru.wikipedia.org/wiki/Хеш-таблица)
+- [Ассоциативный массив](https://ru.wikipedia.org/wiki/Ассоциативный_массив)
+- [Foobar](https://ru.wikipedia.org/wiki/Foobar)
+- [Метапеременная](https://ru.wikipedia.org/wiki/Метапеременная)
+- [Конструктор (объектно-ориентированное программирование)](https://ru.wikipedia.org/wiki/Конструктор_(объектно-ориентированное_программирование))
+- [Списковое включение](https://ru.wikipedia.org/wiki/Списковое_включение)
+- [Итерация](https://ru.wikipedia.org/wiki/Итерация_(программирование))
+- [Синтаксический сахар](https://ru.wikipedia.org/wiki/Синтаксический_сахар)
+- [LIFO](https://ru.wikipedia.org/wiki/LIFO)
+- [Стек](https://ru.wikipedia.org/wiki/Стек)

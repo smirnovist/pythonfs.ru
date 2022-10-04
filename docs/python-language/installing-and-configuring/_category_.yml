@@ -1,0 +1,7 @@
+position: 2
+label: Установка и настройка
+link:
+  type: generated-index
+  title: Установка и настройка
+  slug: /python-language/installing-and-configuring
+  description: Здесь рассматривается установка Python на Windows и Linux.

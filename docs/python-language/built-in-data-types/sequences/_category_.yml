@@ -1,0 +1,7 @@
+position: 2
+label: Последовательности
+link:
+  type: generated-index
+  title: Последовательности
+  slug: /python-language/built-in-data-types/sequences
+  description: Здесь рассматриваются последовательности.

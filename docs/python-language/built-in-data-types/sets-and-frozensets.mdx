@@ -1,0 +1,617 @@
+---
+sidebar_position: 3
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import sets_1 from '!!raw-loader!/static/examples/python-language/built-in-data-types/sets-and-frozensets/sets_1.py';
+
+# Изменяемые и неизменяемые множества
+
+## Множества. Общая информация {#sets-common-information}
+
+Множество — это неупорядоченная коллекция (контейнер) отдельных хешируемых (то есть неизменяемых) объектов. Множества обычно используются для проверки принадлежности элементов, удаления дубликатов из последовательностей и математических операций, таких как объединение, пересечение, разность и симметричная разность.
+
+Каждый из элементов множества не должен быть равен другим элементам этого множества. Иначе говоря, множество не может содержать два равных друг другу элемента. Чтобы гарантировать, что элементы множества не равны между собой, объекты, на которые ссылаются элементы множества, должны быть хешируемыми.
+
+Множество `A` является подмножеством множества `B` тогда и только тогда, когда все элементы множества `A` являются элементами множества `B`.
+
+Множества `A` и `B` равны тогда и только тогда, когда все элементы множества `A` являются элементами множества `B` и все элементы множества `B` являются элементами множества `A` (множество `A` является подмножеством множества `B` и множество `B` является подмножеством множества `A`).
+
+Множество `A` меньше множества `B` тогда и только тогда, когда множество `A` является собственным подмножеством множества `B` (множество `A` является подмножеством множества `B`, но не равно множеству `B`).
+
+Множество `A` больше множества `B` тогда и только тогда, когда множество `A` является собственным надмножеством множества `B` (множество `A` является надмножеством множества `B`, но не равно множеству `B`).
+
+Как и другие коллекции, множества поддерживают такие операции, как `x in set`, `len(set)` и `for x in set`. Будучи неупорядоченными коллекциями, множества не хранят позиции элементов или порядок вставки элементов. Соответственно, множества не поддерживают индексацию, взятие срезов или другое поведение, характерное для последовательностей.
+
+В настоящее время существует два встроенных типа множеств: `set` и `frozenset`.
+
+Тип `set` (от английского «set» — «множество») является изменяемым — содержимое можно изменять с помощью таких методов, как `set.add()` и `set.remove`. Поскольку объекты типа `set` изменяемые, они не являются хешируемыми и не могут использоваться как ключи словарей или как элементы других множеств.
+
+Тип `frozenset` (от английского «frozen set» — «замороженное множество») является неизменяемым и хешируемым — содержимое объектов типа `frozenset` не может быть изменено после создания. Поэтому объекты типа `frozenset` можно использовать как ключи словарей или как элементы других множеств.
+
+Непустые объекты типа `set` можно создавать через встроенную функцию `set()`, а также через литералы, поместив внутрь фигурных скобок элементы, разделённые запятыми, например: `{'foo', 'bar'}`. Объекты типа `frozenset` можно создавать только через функцию `frozenset()`.
+
+Конструкторы для обоих типов работают одинаково.
+
+### `class set([iterable])` {#class-set-iterable}
+### `class frozenset([iterable])` {#class-frozenset-iterable}
+
+Функция-[конструктор](https://ru.wikipedia.org/wiki/Конструктор_(объектно-ориентированное_программирование)) `set()` возвращает ссылку на новый объект типа `set`, а функция `frozenset()` — ссылку на новый объект типа `frozenset`. Элементы нового множества элементы берутся из итерируемого объекта, переданного в функцию через аргумент `iterable`. Элементы итерируемого объекта должны быть хешируемыми. Если элементы множества сами являются множествами, они должны быть объектами типа `frozenset`, но не `set`, так как только объекты типа  `frozenset` являются хешируемыми. Если аргумент `iterable` не указан, возвращается новое пустое множество.
+
+Объекты типа `set` можно задавать не только через функцию `set()`, но также через:
+
+- литералы, заключая в фигурные скобки элементы, разделённые запятыми: `{'foo', 'bar'}`;
+- генераторы множеств: `{c for c in 'abracadabra' if c not in 'abc'}`.
+
+## Операции с множествами (`set` и `frozenset`) {#set-and-frozenset-operations}
+
+:::info внимание
+
+Неоператорные версии методов `set.union()`, `frozenset.union()`, `set.intersection()`, `frozenset.intersection()`, `set.difference()`, `frozenset.difference()`, `set.symmetric_difference()`, `frozenset.symmetric_difference()`, `set.issubset()`, `frozenset.issubset()`, `set.issuperset()` и `frozenset.issuperset()` принимают любые итерируемые объекты в качестве аргументов. Их аналоги, основанные на операторах, напротив, требуют, чтобы их аргументы принадлежали к типам `set` или `frozenset`. Это сделано, чтобы исключить возможность использования конструкций, которые могли бы привести к ошибкам, таких как `set('abc') & 'cbs'`, в пользу более удобочитаемых конструкций, таких как `set('abc').intersection('cbs')`.
+
+Аргумент `o` специальных методов `set.__contains__()` и `frozenset.__contains__()`, обеспечивающих выполнение операций `x in s` и `x not in s`, может быть изменяемым множеством типа `set` (хотя элементами множеств могут быть только хешируемые множества типа `frozenset`). Если через аргумент `o` передаётся изменяемое множество типа `set`, при вызове метода на основе него автоматически создаётся временный объект типа `frozenset`, который удаляется из памяти после завершения работы метода. Это сделано для упрощения работы с этими методами. Подробно специальные методы и их связь с операторами будут разбираться в главе **Объектно-ориентированное программирование**.
+
+:::
+
+Оба типа множеств — `set` и `frozenset` — поддерживают взаимное сравнение друг с другом.
+
+Объекты типа `set` сравниваются с объектами типа `frozenset` на основе сравнения элементов, входящих в эти множества. Например, выражение `set('abc') == frozenset('abc')` возвращает `True`, и выражение `set('abc') in set([frozenset('abc')])` тоже возвращает `True`.
+
+Если два множества не равны, это не значит, что одно из них больше или меньше другого. Сравнение множеств ведётся на основании сравнения элементов, принадлежащих к этим множествам. Элементы сравниваются по значению, а не по идентичности. Например, любые два непустых непересекающихся множества не равны и не являются подмножествами друг друга, поэтому если выражение `len(a) > 0 and len(b) > 0 and a.isdisjoint(b)` возвращает `True`, все следующие выражения возвращают `False`: `a < b`, `a == b` и `a > b`.
+
+Поскольку множества поддерживают только частичное упорядочивание (отношения подмножеств), метод `list.sort()`, вызванный у списков, содержащих в себе множества, вернёт неопределённый результат.
+
+Элементы множеств, подобно ключам словарей, должны быть хешируемыми.
+
+Бинарные операции, которые смешивают объекты типа `set` с объектами типа `frozenset`, возвращают объект, принадлежащий к типу первого операнда. Например, выражение `frozenset('ab') | set('bc')` возвращает объект типа `frozenset`.
+
+Ниже перечислены операции, поддерживаемые объектами типов `set` и `frozenset`.
+
+### `len(s)` {#len-s}
+
+Возвращает количество элементов в множестве `s` (мощность множества `s`).
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> len(s)
+2
+```
+
+### `x in s` {#x-in-s}
+
+![Элемент принадлежит множеству](/images/python-language/built-in-data-types/sets-and-frozensets/element-in-set.jpg "Элемент принадлежит множеству")
+
+Выполняет проверку объекта `x` на принадлежность к множеству `s`. Если объект `x` принадлежит множеству `s`, возвращает `True`. В противном случае возвращает `False`. Объект `x` сам может быть множеством, в том числе изменяемым множеством типа `set`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> 'a' in s
+True
+>>> 'c' in s
+False
+>>> o = {frozenset(['a', 'b']), 'c', 'd'}
+>>> s in o
+True
+```
+
+### `x not in s` {#x-not-in-s}
+
+![Элемент не принадлежит множеству](/images/python-language/built-in-data-types/sets-and-frozensets/element-not-in-set.jpg "Элемент не принадлежит множеству")
+
+Выполняет проверку `x` на непринадлежность к множеству `s`. Проверка выполняется по значению, а не по идентичности. Если объект `x` не принадлежит множеству `s`, возвращает `True`. В противном случае возвращает `False`. Объект `x` сам может быть множеством, в том числе изменяемым множеством типа `set`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> 'c' not in s
+True
+>>> 'a' not in s
+False
+>>> o = {frozenset(['a', 'b']), 'c', 'd'}
+>>> s not in o
+False
+```
+
+### `s == other` {#s-equals-equals-other}
+
+Проверка множеств на равенство. Если все элементы первого множества являются элементами второго множества и все элементы второго множества являются элементами первого множества, возвращает `True`. В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = set()
+>>> f = frozenset()
+>>> s == f
+True
+>>> s = {'a', 'b'}
+>>> f = frozenset(['a', 'b'])
+>>> s == f
+True
+>>> o = {'a', 'b', 'c'}
+>>> s == o
+False
+```
+
+### `set.isdisjoint(other)` {#set-isdisjoint-other}
+### `frozenset.isdisjoint(other)` {#frozenset-isdisjoint-other}
+
+![Два множества не пересекаются](/images/python-language/built-in-data-types/sets-and-frozensets/disjoint.jpg "Два множества не пересекаются")
+
+Возвращает `True`, если множество не имеет общих элементов (не пересекается) с другим множеством, переданным через аргумент `other`. В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['c', 'd'])
+>>> s.isdisjoint(f)
+True
+>>> True
+True
+>>> o = ['b', 'c', 'd']
+>>> s.isdisjoint(o)
+False
+>>> f.isdisjoint(o)
+False
+```
+
+### `set.issubset(other)` {#set-issubset-other}
+### `frozenset.issubset(other)` {#frozenset-issubset-other}
+### `s <= other` {#s-less-than-equals-other}
+
+![Одно множество является подмножеством другого множества](/images/python-language/built-in-data-types/sets-and-frozensets/subset-and-superset.jpg "Одно множество является подмножеством другого множества")
+
+Возвращает `True`, если все элементы исходного множества являются элементами множества `other` (исходное множество является подмножеством множества `other`). В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['a', 'b', 'c', 'd'])
+>>> s.issubset(f)
+True
+>>> s <= f
+True
+>>> f.issubset(s)
+False
+>>> f <= s
+False
+>>> o = ['a', 'b', 'c', 'd']
+>>> s.issubset(o)
+True
+>>> s <= o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: '<=' not supported between instances of 'set' and 'list'
+>>> s <= set(o)
+True
+```
+
+### `s < other` {#s-less-than-other}
+
+![Одно множество является подмножеством другого множества](/images/python-language/built-in-data-types/sets-and-frozensets/subset-and-superset.jpg "Одно множество является подмножеством другого множества")
+
+Возвращает `True`, если все элементы исходного множества являются элементами множества `other` и при этом множество `other` имеет элементы, не входящие в исходное множество, то есть выполнится условие `s <= other and s != other` (исходное множество является собственным подмножеством множества `other`). В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['a', 'b', 'c', 'd'])
+>>> s < f
+True
+>>> f < s
+False
+>>> o = {'d', 'e'}
+>>> s < o
+False
+>>> f < o
+False
+```
+
+### `set.issuperset(other)` {#set-issuperset-other}
+### `frozenset.issuperset(other)` {#frozenset-issuperset-other}
+### `s >= other` {#s-greater-than-equals-other}
+
+![Одно множество является надмножеством другого множества](/images/python-language/built-in-data-types/sets-and-frozensets/subset-and-superset.jpg "Одно множество является надмножеством другого множества")
+
+Возвращает `True`, если все элементы множества `other` являются элементами исходного множества (исходное множество является надмножеством множества `other`). В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['a', 'b'])
+>>> s.issuperset(f)
+True
+>>> s >= f
+True
+>>> f.issuperset(s)
+False
+>>> f >= s
+False
+>>> o = ['a', 'b']
+>>> s.issuperset(o)
+True
+>>> s >= o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: '>=' not supported between instances of 'set' and 'list'
+>>> s >= set(o)
+True
+```
+
+### `s > other` {#s-greater-than-other}
+
+![Одно множество является надмножеством другого множества](/images/python-language/built-in-data-types/sets-and-frozensets/subset-and-superset.jpg "Одно множество является надмножеством другого множества")
+
+Возвращает `True`, если все элементы множества `other` являются элементами исходного множества и при этом исходное множество имеет элементы, не входящие в множество `other`, то есть выполнится условие `s >= other and s != other` (исходное множество является собственным надмножеством множества `other`). В противном случае возвращает `False`.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['a', 'b'])
+>>> s > f
+True
+>>> f > s
+False
+>>> o = {'d', 'e'}
+>>> s > o
+False
+>>> o > s
+False
+```
+
+### `set.union(*others)` {#set-union-others}
+### `frozenset.union(*others)` {#frozenset-union-others}
+### `s | other | ...` {#s-vertical-line-other-vertical-line-three-dots}
+
+![Объединение множеств](/images/python-language/built-in-data-types/sets-and-frozensets/union.jpg "Объединение множеств")
+
+Возвращает новое множество, содержащее все элементы из исходного множества и всех остальных множеств, переданных через аргументы `*others` (объединение множеств). Звёздочка перед именем аргумента означает, что метод принимает произвольное количество позиционных аргументов.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['c', 'd'])
+>>> s.union(f)
+{'b', 'c', 'a', 'd'}
+>>> s | f
+{'b', 'c', 'a', 'd'}
+>>> f.union(s)
+frozenset({'a', 'c', 'b', 'd'})
+>>> f | s
+frozenset({'a', 'c', 'b', 'd'})
+>>> o = ['d', 'e']
+>>> s.union(f, o)
+{'b', 'a', 'd', 'c', 'e'}
+>>> s | f | o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for |: 'set' and 'list'
+>>> s | f | set(o)
+{'b', 'a', 'd', 'e', 'c'}
+```
+
+### `set.intersection(*others)` {#set-intersection-others}
+### `frozenset.intersection(*others)` {#frozenset-intersection-others}
+### `s & other & ...` {#s-ampersand-other-ampersand-three-dots}
+
+![Пересечение множеств](/images/python-language/built-in-data-types/sets-and-frozensets/intersection.jpg "Пересечение множеств")
+
+Возвращает новое множество, содержащее элементы, общие для исходного множества и всех остальных множеств, переданных через аргументы `*others` (пересечение множеств). Если множества не пересекаются, возвращает пустое множество того же типа, что исходное множество.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['b', 'c'])
+>>> s.intersection(f)
+{'b'}
+>>> s & f
+{'b'}
+>>> f.intersection(s)
+frozenset({'b'})
+>>> f & s
+frozenset({'b'})
+>>> o = ['c', 'd']
+>>> s.intersection(o)
+set()
+>>> s.intersection(f, o)
+set()
+>>> s.intersection(f, o)
+set()
+>>> f.intersection(s, o)
+frozenset()
+>>> f & o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for &: 'frozenset' and 'list'
+>>> f & set(o)
+frozenset({'c'})
+```
+
+### `set.difference(*others)` {#set-difference-others}
+### `frozenset.difference(*others)` {#frozenset-difference-others}
+### `s - other - ...` {#s-minus-other-minus-three-dots}
+
+![Разность множеств](/images/python-language/built-in-data-types/sets-and-frozensets/difference.jpg "Разность множеств")
+
+Возвращает новое множество, содержащее элементы, которые есть в исходном множестве и отсутствуют в остальных множествах, переданных через аргументы `*others` (разность множеств). Если в других множествах нет ни одного элемента, принадлежащего исходному множеству, возвращает копию исходного множества.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['c', 'd', 'e'])
+>>> s.difference(f)
+{'b', 'a'}
+>>> s - f
+{'b', 'a'}
+>>> f.difference(s)
+frozenset({'e'})
+>>> f - s
+frozenset({'e'})
+>>> o = ['e', 'f']
+>>> s.difference(o)
+{'a', 'c', 'b', 'd'}
+>>> s.difference(f, o)
+{'b', 'a'}
+>>> s - f - o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for -: 'set' and 'list'
+>>> s - f - set(o)
+{'a', 'b'}
+```
+
+### `set.symmetric_difference(other)` {#set-symmetric-difference-other}
+### `frozenset.symmetric_difference(other)` {#frozenset-symmetric-difference-other}
+### `s ^ other` {#s-circumflex-accent-other}
+
+![Симметрическая разность множеств](/images/python-language/built-in-data-types/sets-and-frozensets/symmetric-difference.jpg "Симметрическая разность множеств")
+
+Возвращает новое множество, содержащее элементы, принадлежащие исходному множеству и другому множеству, переданному через аргумент `other`, но не принадлежат обоим множествам (симметрическая разность множеств). Если исходное и другое множества не пересекаются, возвращает новое множество, содержащее все элементы из обоих множеств.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['b', 'c'])
+>>> s.symmetric_difference(f)
+{'c', 'a'}
+>>> s ^ f
+{'c', 'a'}
+>>> f.symmetric_difference(s)
+frozenset({'c', 'a'})
+>>> f ^ s
+frozenset({'c', 'a'})
+>>> o = ['d', 'e']
+>>> s.symmetric_difference(o)
+{'e', 'a', 'b', 'd'}
+>>> f.symmetric_difference(o)
+frozenset({'e', 'c', 'b', 'd'})
+>>> f ^ o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for ^: 'frozenset' and 'list'
+>>> f ^ set(o)
+frozenset({'e', 'c', 'b', 'd'})
+```
+
+### `set.copy()` {#set-copy}
+### `frozenset.copy()` {#frozenset-copy}
+
+Возвращает поверхностную копию исходного множества.
+
+Поверхностная копия объекта — это новый объект того же типа и той же структуры, что и исходный объект. Если исходный объект содержит ссылки на другие объекты, поверхностная копия будет содержать ссылки на те же объекты, на которые ссылается исходный объект.
+
+**Примечание.** Аналогичный функционал имеется в стандартной библиотеке в модуле [copy]`https://docs.python.org/3/library/copy.html`. Модуль `copy` содержит два метода:
+
+- `copy.copy(x)` — возвращает поверхностную копию объекта `x`;
+- copy.deepcopy(x[, memo]) — возвращает глубокую копию объекта `x`. Глубокая копия отличается от поверхностной тем, что создаёт копии всех объектов, на которые ссылается исходный объект.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> o = s.copy()
+>>> o
+{'b', 'a'}
+>>> f = frozenset(['c', 'd'])
+>>> o = f.copy()
+>>> o
+frozenset({'c', 'd'})
+```
+
+## Операции с изменяемыми множествами (`set`) {#set-operations}
+
+:::info внимание
+
+Неоператорные версии методов `set.update()`, `set.intersection_update()`, `set.difference_update()` и `set.symmetric_difference_update()` принимают любые итерируемые объекты в качестве аргументов. Их аналоги, основанные на операторах, напротив, требуют, чтобы их аргументы принадлежали к типам `set` или `frozenset`.
+
+Аргумент `elem` методов `set.remove()` и `set.discard()` может быть изменяемым множеством типа `set` (хотя элементами множеств могут быть только хешируемые множества типа `frozenset`). Если через аргумент `elem` передаётся изменяемое множество типа `set`, при вызове метода на основе него автоматически создаётся временный объект типа `frozenset`, который удаляется из памяти после завершения работы метода. Это сделано для упрощения работы с этими методами.
+
+:::
+
+Ниже перечислены операции, поддерживаемые объектами типа `set`, но не поддерживаемые объектами типа `frozenset`.
+
+### `set.update(*others)` {#set-update-others}
+### `s |= other | ...` {#s-vertical-bar-equals-other-vertical-bar-three-dots}
+
+![Объединение множеств](/images/python-language/built-in-data-types/sets-and-frozensets/union.jpg "Объединение множеств")
+
+Обновляет множество, добавляя элементы из объектов, переданных через аргументы `*others`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> f = frozenset(['a', 'b', 'c', 'd'])
+>>> o = ['c', 'd', 'e', 'f']
+>>> s.update(f, o)
+>>> s
+{'d', 'e', 'b', 'f', 'c', 'a'}
+>>> i = ['g', 'h']
+>>> s |= i
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for |=: 'set' and 'list'
+>>> s |= set(i)
+>>> s
+{'d', 'e', 'b', 'f', 'h', 'g', 'c', 'a'}
+```
+
+### `set.intersection_update(*others)` {#set-intersection-update-others}
+### `s &= other & ...` {#s-ampersand-equals-other-ampersand-three-dots}
+
+![Пересечение множеств](/images/python-language/built-in-data-types/sets-and-frozensets/intersection.jpg "Пересечение множеств")
+
+Обновляет множество, сохраняя только те элементы, которые находятся и в исходном множестве, и в объектах, переданных через аргументы `*others`. Если исходное множество не пересекается ни с одним из объектов, переданных через аргументы `*others`, исходное множество становится пустым.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> o = ['c', 'd']
+>>> s.intersection_update(o)
+>>> s
+set()
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['b', 'c', 'd', 'e'])
+>>> o = ['d', 'e', 'f', 'g']
+>>> s.intersection_update(f, o)
+>>> s
+{'d'}
+>>> i = ['d', 'e']
+>>> s &= i
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for &=: 'set' and 'list'
+>>> s &= set(i)
+>>> s
+{'d'}
+```
+
+### `set.difference_update(*others)` {#set-difference-update-others}
+### `s -= other | ...` {#s-minus-equals-other-vertical-line-three-dots}
+
+![Разность множеств](/images/python-language/built-in-data-types/sets-and-frozensets/difference.jpg "Разность множеств")
+
+Обновляет множество, удаляя элементы, которые находятся и в исходном множестве, и в объектах, переданных через аргументы `*others`. Если исходное множество не пересекается ни с одним из объектов, переданных через аргументы `*others`, оно не меняется.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> o = ['c', 'd']
+>>> s.difference_update(o)
+>>> s
+{'b', 'a'}
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['b', 'c', 'd', 'e'])
+>>> o = ['d', 'e', 'f', 'g']
+>>> s.difference_update(f, o)
+>>> s
+{'a'}
+>>> i = ['a', 'b']
+>>> s -= i
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for -=: 'set' and 'list'
+>>> s -= set(i)
+>>> s
+set()
+```
+
+### `set.symmetric_difference_update(other)` {#set-symmetric-difference-update-other}
+### `s ^= other` {#s-circumflex-accent-equals-other}
+
+![Симметрическая разность множеств](/images/python-language/built-in-data-types/sets-and-frozensets/symmetric-difference.jpg "Симметрическая разность множеств")
+
+Обновляет множество, сохраняя только те элементы, которые находятся или в исходном множестве, или в объекте, переданном через аргумент `other`, но не в обоих объектах. Если исходное множество не пересекается с объектом, переданным через аргумент `other`, исходное множество будет содержать все элементы из объекта, переданного через аргумент `other`.
+
+```python showLineNumbers
+>>> s = {'a', 'b'}
+>>> o = ['c', 'd']
+>>> s.symmetric_difference_update(o)
+>>> s
+{'d', 'a', 'b', 'c'}
+>>> s = {'a', 'b', 'c', 'd'}
+>>> f = frozenset(['b', 'c', 'd', 'e'])
+>>> s.symmetric_difference_update(f)
+>>> s
+{'a', 'e'}
+>>> o = ['d', 'e', 'f', 'g']
+>>> s ^= o
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for ^=: 'set' and 'list'
+>>> s ^= set(o)
+>>> s
+{'d', 'a', 'f', 'g'}
+```
+
+### `set.add(elem)` {#set-add-elem}
+
+Добавляет элемент `elem` в множество.
+
+```python showLineNumbers
+>>> s = set()
+>>> s.add('a')
+>>> s
+{'a'}
+>>> s.add('b')
+>>> s
+{'a', 'b'}
+```
+
+### `set.remove(elem)` {#set-remove-elem}
+
+Удаляет элемент `elem` из множества. Вызывает исключение типа `KeyError`, если элемент `elem` не найден в множестве.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> s.remove('d')
+>>> s
+{'a', 'b', 'c'}
+>>> s.remove('c')
+>>> s
+{'a', 'b'}
+>>> s.remove('x')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'x'
+```
+
+### `set.discard(elem)` {#set-discard-elem}
+
+Удаляет элемент `elem` из множества, если он есть. Отличие от метода ``set.remove()` в том, что метод `set.discard() не вызывает исключение, если элемент `elem` не найден в множестве.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> s.discard('d')
+>>> s
+{'a', 'b', 'c'}
+>>> s.discard('x')
+>>> s
+{'a', 'b', 'c'}
+```
+
+### `set.pop()` {#set-pop}
+
+Удаляет произвольный элемент из множества и возвращает ссылку на него. Вызывает исключение типа `KeyError`, если множество пустое. Метод `set.pop()` удобен для обработки всех элементов множества в цикле `while`.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> e = s.pop()
+>>> e
+'d'
+>>> s
+{'a', 'b', 'c'}
+>>> while s:
+...     s.pop()
+...
+'a'
+'b'
+'c'
+>>> s
+set()
+```
+
+### `set.clear()` {#set-clear}
+
+Удаляет все элементы из множества.
+
+```python showLineNumbers
+>>> s = {'a', 'b', 'c', 'd'}
+>>> s.clear()
+>>> s
+set()
+```
+
+## Дополнительные ссылки {#additional-links}
+
+- [Хеш-сумма](https://ru.wikipedia.org/wiki/Хеш-сумма)
+- [Хеш-функция](https://ru.wikipedia.org/wiki/Хеш-функция)
+- [Множество](https://ru.wikipedia.org/wiki/Множество)
+- [Подмножество](https://ru.wikipedia.org/wiki/Подмножество)
+- [Множество (тип данных)](https://ru.wikipedia.org/wiki/Множество_(тип_данных))
+- [Теория множеств](https://ru.wikipedia.org/wiki/Теория_множеств)
+- [Foobar (русская Википедия)](https://ru.wikipedia.org/wiki/Foobar)
+- [Foobar (английская Википедия)](https://en.wikipedia.org/wiki/Foobar)
+- [Метапеременная](https://ru.wikipedia.org/wiki/Метапеременная)
+- [Конструктор (объектно-ориентированное программирование)](https://ru.wikipedia.org/wiki/Конструктор_(объектно-ориентированное_программирование))
