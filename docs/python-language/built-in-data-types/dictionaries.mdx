@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Словари
 
-## Словари. Общая информация {#dictionaries-common-information}
+## Словари. Общая информация {#dictionaries-general-information}
 
 Словарь (`dict`) — это одна из разновидностей коллекций (контейнеров) — встроенный тип данных, реализующий механизм отображения (от английского «mapping» — «отображение»). Отображения реализуют набор методов, определённых в [абстрактных базовых классах](https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes) [`collections.abc.Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping) и [`collections.abc.MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping). Абстрактные базовые классы будут подробно разбираться в главе **Объектно-ориентированное программирование**.
 
@@ -522,7 +522,7 @@ KeyError: 'popitem(): dictionary is empty'
 
 ### `reversed(d)` {#reversed-d}
 
-Вернуть обратный итератор по ключам словаря. Это синтаксический сахар (более короткая синтаксическая конструкция, упрощающая написание программы) для выражения `reversed(d.keys())`.
+Возвращает обратный итератор по ключам словаря. Это синтаксический сахар (более короткая синтаксическая конструкция, упрощающая написание программы) для выражения `reversed(d.keys())`.
 
 ```python showLineNumbers
 >>> d = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
